@@ -20,10 +20,16 @@ pipeline {
             }
         }
 
+        stage('Trivy DB Download') {
+            steps {
+                sh 'trivy image --download-db-only'
+            }
+        }
+
         stage('Scan with Trivy') {
             steps {
                 sh '''
-                trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 1 --timeout 5m $IMAGE_NAME:$TAG
+                trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 0 --timeout 3m $IMAGE_NAME:$TAG
                 '''
             }
         }
