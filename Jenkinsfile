@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'docker-agent' }
 
     environment {
         IMAGE_NAME = "pruthadongre09/myapp"
@@ -23,7 +23,7 @@ pipeline {
         stage('Scan with Trivy') {
             steps {
                 sh '''
-                trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 0 --timeout 2m $IMAGE_NAME:$TAG
+                trivy image --severity HIGH,CRITICAL --exit-code 1 $IMAGE_NAME:$TAG
                 '''
             }
         }
@@ -31,6 +31,12 @@ pipeline {
         stage('Push Image') {
             steps {
                 sh 'docker push $IMAGE_NAME:$TAG'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f k8s/'
             }
         }
     }
